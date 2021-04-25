@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -15,19 +16,32 @@
             color: white;
             padding: 30px;
         }
+
         .chat-form__message {
             width: 20%;
         }
+
         .sent-messages {
             list-style: none;
         }
+        .edit-username-link {
+            text-decoration: underline;
+        }
+        .edit-username-link:hover {
+            cursor: pointer;
+        }
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
+
 <body>
     <main>
         <h1>Chat</h1>
+        <p class="edit-username-link">Edit Username</p>
         <form class="username-form">
-            <input type="text" name="username" class="username-form__input" placeholder="username">
+            <input type="text" name="username" class="username-form__input" placeholder="Please set your username">
             <input type="submit" value="Set Username">
         </form>
         <ul class="sent-messages"></ul>
@@ -40,42 +54,47 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
         var socket = io();
-
         var sentMessages = document.querySelector('.sent-messages');
         var chatForm = document.querySelector('.chat-form');
         var chatFormMessage = document.querySelector('.chat-form__message');
         var errorContainer = document.querySelector('.error-container');
-        var userNameForm = document.querySelector('.username-form')
+        var userNameForm = document.querySelector('.username-form');
         var userNameInput = document.querySelector('.username-form__input');
+        var editUserNameLink = document.querySelector('.edit-username-link');
         var user;
 
-        chatForm.addEventListener('submit', function(e) {
+        chatForm.addEventListener('submit', function (e) {
             e.preventDefault();
             if (chatFormMessage.value) {
-                socket.emit('chat message', {username: user, msg: chatFormMessage.value});
+                socket.emit('chat message', { username: user, msg: chatFormMessage.value });
                 chatFormMessage.value = "";
             }
         });
-        userNameForm.addEventListener('submit', function(e) {
+        userNameForm.addEventListener('submit', function (e) {
             e.preventDefault();
             if (userNameInput.value) {
                 socket.emit('set username', userNameInput.value);
             }
         });
-        socket.on('chat message', function(msg) {
+        editUserNameLink.addEventListener('click', function(e) {
+            console.log(userNameForm)
+            userNameForm.classList.toggle("hidden");
+        });
+        socket.on('chat message', function (msg) {
             var item = document.createElement('li');
             item.textContent = `${msg.username}: ${msg.msg} `;
             sentMessages.appendChild(item);
         });
-        socket.on('userSet', function(data) {
+        socket.on('userSet', function (data) {
             errorContainer.textContent = "";
-            userNameForm.style.display = "none";
+            userNameForm.classList.add("hidden");
+            userNameInput.textContent = "Update your username"
             user = data.username;
         });
-        socket.on('userExists', function(error) {
+        socket.on('userExists', function (error) {
             errorContainer.innerText = error;
         });
-        socket.on('chat notification', function(notification) {
+        socket.on('chat notification', function (notification) {
             var item = document.createElement('li');
             item.textContent = notification;
             item.style.fontStyle = "italic";
@@ -84,4 +103,5 @@
         });
     </script>
 </body>
+
 </html>
