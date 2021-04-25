@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App</title>
+    <style>
+        .chat-form {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100vw;
+            background-color: rgb(33, 69, 122);
+            color: white;
+            padding: 30px;
+        }
+        .chat-form__message {
+            width: 20%;
+        }
+        .sent-messages {
+            list-style: none;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>Chat</h1>
+        <ul class="sent-messages"></ul>
+        <form class="chat-form">
+            <input type="text" name="msg" class="chat-form__message">
+            <input type="submit" class="chat-form__send" value="Send">
+        </form>
+    </main>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        var socket = io();
+
+        var sentMessages = document.querySelector('.sent-messages');
+        var chatForm = document.querySelector('.chat-form');
+        var chatFormMessage = document.querySelector('.chat-form__message');
+
+        chatForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (chatFormMessage.value) {
+                socket.emit('chat message', chatFormMessage.value);
+                chatFormMessage.value = "";
+            }
+        });
+        
+        socket.on('chat message', function(msg) {
+            var item = document.createElement('li');
+            item.textContent = msg;
+            sentMessages.appendChild(item);
+            // window.scrollTo(0, document.body.scrollHeight);
+        });
+        socket.on('chat notification', function(notification) {
+            var item = document.createElement('li');
+            item.textContent = notification;
+            item.style.fontStyle = "italic";
+            item.style.color = "grey";
+            sentMessages.appendChild(item);
+        });
+    </script>
+</body>
+</html>
