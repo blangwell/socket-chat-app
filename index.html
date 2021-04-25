@@ -26,7 +26,12 @@
 <body>
     <main>
         <h1>Chat</h1>
+        <form class="username-form">
+            <input type="text" name="username" class="username-form__input" placeholder="username">
+            <input type="submit" value="Set Username">
+        </form>
         <ul class="sent-messages"></ul>
+        <span class="error-container"></span>
         <form class="chat-form">
             <input type="text" name="msg" class="chat-form__message">
             <input type="submit" class="chat-form__send" value="Send">
@@ -39,20 +44,36 @@
         var sentMessages = document.querySelector('.sent-messages');
         var chatForm = document.querySelector('.chat-form');
         var chatFormMessage = document.querySelector('.chat-form__message');
+        var errorContainer = document.querySelector('.error-container');
+        var userNameForm = document.querySelector('.username-form')
+        var userNameInput = document.querySelector('.username-form__input');
+        var user;
 
         chatForm.addEventListener('submit', function(e) {
             e.preventDefault();
             if (chatFormMessage.value) {
-                socket.emit('chat message', chatFormMessage.value);
+                socket.emit('chat message', {username: user, msg: chatFormMessage.value});
                 chatFormMessage.value = "";
             }
         });
-        
+        userNameForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (userNameInput.value) {
+                socket.emit('set username', userNameInput.value);
+            }
+        });
         socket.on('chat message', function(msg) {
             var item = document.createElement('li');
-            item.textContent = msg;
+            item.textContent = `${msg.username}: ${msg.msg} `;
             sentMessages.appendChild(item);
-            // window.scrollTo(0, document.body.scrollHeight);
+        });
+        socket.on('userSet', function(data) {
+            errorContainer.textContent = "";
+            userNameForm.style.display = "none";
+            user = data.username;
+        });
+        socket.on('userExists', function(error) {
+            errorContainer.innerText = error;
         });
         socket.on('chat notification', function(notification) {
             var item = document.createElement('li');
